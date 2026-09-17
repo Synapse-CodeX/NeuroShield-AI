@@ -1,0 +1,302 @@
+/* =========================================================
+   NEUROSHIELD NAVIGATION
+   ========================================================= */
+
+.navbar {
+  position: sticky;
+  top: 14px;
+  z-index: 100;
+  width: min(calc(100% - 28px), 1240px);
+  margin: 14px auto 0;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 16px;
+  background: rgba(10, 10, 15, 0.72);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.035);
+}
+
+.nav-container {
+  min-height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+}
+
+/* =========================================================
+   LOGO
+   ========================================================= */
+
+.nav-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  min-width: max-content;
+  color: inherit;
+  text-decoration: none;
+}
+
+.logo-mark {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  overflow: hidden;
+  border: 1px solid rgba(139, 92, 246, 0.4);
+  border-radius: 11px;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(139, 92, 246, 0.22),
+      rgba(76, 29, 149, 0.08)
+    );
+  color: #c4b5fd;
+  box-shadow:
+    0 0 22px rgba(124, 58, 237, 0.13),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.logo-mark::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(167, 139, 250, 0.2);
+  filter: blur(10px);
+}
+
+.logo-mark svg {
+  position: relative;
+  z-index: 1;
+}
+
+.logo-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.logo-text {
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 850;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+}
+
+.logo-subtitle {
+  color: var(--text-tertiary);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+/* =========================================================
+   NAV LINKS
+   ========================================================= */
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.nav-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 13px;
+  border-radius: 9px;
+  color: var(--text-tertiary);
+  font-size: 0.79rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition:
+    color 180ms ease,
+    background 180ms ease;
+}
+
+.nav-link:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.nav-link.active {
+  color: #ddd6fe;
+  background: rgba(124, 58, 237, 0.1);
+}
+
+.nav-link.active::after {
+  content: '';
+  position: absolute;
+  left: 13px;
+  right: 13px;
+  bottom: -1px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    #8b5cf6,
+    transparent
+  );
+  box-shadow: 0 0 10px rgba(139, 92, 246, 0.65);
+}
+
+/* =========================================================
+   SYSTEM STATUS
+   ========================================================= */
+
+.nav-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: max-content;
+  padding: 7px 10px;
+  border: 1px solid rgba(34, 197, 94, 0.14);
+  border-radius: 9px;
+  background: rgba(34, 197, 94, 0.045);
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 8px;
+  height: 8px;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-safe);
+  box-shadow: 0 0 9px rgba(34, 197, 94, 0.8);
+  animation: status-pulse 2.2s ease-in-out infinite;
+}
+
+.status-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  line-height: 1;
+}
+
+.status-label {
+  color: var(--text-tertiary);
+  font-size: 0.54rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.status-value {
+  color: #86efac;
+  font-size: 0.67rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.status-icon {
+  color: #4ade80;
+  opacity: 0.75;
+}
+
+@keyframes status-pulse {
+  0%,
+  100% {
+    opacity: 0.65;
+    transform: scale(0.9);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 820px) {
+  .nav-container {
+    gap: 14px;
+  }
+
+  .nav-status {
+    display: none;
+  }
+
+  .nav-links {
+    margin-left: auto;
+  }
+}
+
+@media (max-width: 600px) {
+  .navbar {
+    top: 8px;
+    width: calc(100% - 16px);
+    margin-top: 8px;
+    border-radius: 13px;
+  }
+
+  .nav-container {
+    min-height: 58px;
+  }
+
+  .logo-mark {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+  }
+
+  .logo-text {
+    font-size: 0.92rem;
+  }
+
+  .logo-subtitle {
+    display: none;
+  }
+
+  .nav-links {
+    gap: 2px;
+  }
+
+  .nav-link {
+    min-height: 34px;
+    padding: 0 8px;
+    gap: 0;
+  }
+
+  .nav-link span {
+    display: none;
+  }
+
+  .nav-link.active::after {
+    left: 9px;
+    right: 9px;
+  }
+}
+
+@media (max-width: 390px) {
+  .nav-container {
+    gap: 8px;
+  }
+
+  .nav-link {
+    padding: 0 7px;
+  }
+}

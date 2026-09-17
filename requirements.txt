@@ -1,0 +1,11 @@
+langchain
+langgraph
+openai
+tiktoken
+faiss-cpu
+streamlit
+python-dotenv
+langchain_community
+langchain_text_splitters
+langchain_openai
+tavily

@@ -1,0 +1,28 @@
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 0;
+  gap: 16px;
+}
+
+.loading-icon-wrapper {
+  color: #a855f7;
+  filter: drop-shadow(0 0 10px rgba(168, 85, 247, 0.4));
+}
+
+.loading-message {
+  font-size: 1.5rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+}
+
+.loading-dots {
+  display: flex;
+  color: #a855f7;
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-top: -10px;
+}
