@@ -1,0 +1,292 @@
+.evidence-card {
+  position: relative;
+  overflow: hidden;
+
+  padding: 18px;
+
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.045),
+      rgba(255, 255, 255, 0.018)
+    );
+
+  transition:
+    border-color 180ms ease,
+    transform 180ms ease,
+    background 180ms ease;
+}
+
+.evidence-card:hover {
+  transform: translateY(-2px);
+
+  border-color: var(--border-strong);
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.065),
+      rgba(255, 255, 255, 0.025)
+    );
+}
+
+/* ---------------------------------------------------------
+   TOP
+--------------------------------------------------------- */
+
+.evidence-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.evidence-card__source {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.evidence-card__icon {
+  display: grid;
+  place-items: center;
+
+  width: 34px;
+  height: 34px;
+
+  flex-shrink: 0;
+
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+
+  color: var(--text-secondary);
+
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.evidence-card__identity {
+  min-width: 0;
+}
+
+.evidence-card__identity h4 {
+  margin: 0;
+
+  overflow: hidden;
+
+  color: var(--text-primary);
+
+  font-size: 14px;
+  font-weight: 650;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.evidence-card__domain {
+  display: block;
+
+  margin-top: 3px;
+
+  overflow: hidden;
+
+  color: var(--text-muted);
+
+  font-family: var(--font-mono);
+  font-size: 11px;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------
+   ROLE
+--------------------------------------------------------- */
+
+.evidence-card__role {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+
+  flex-shrink: 0;
+
+  padding: 5px 9px;
+
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+
+  color: var(--text-secondary);
+
+  background: rgba(255, 255, 255, 0.035);
+
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 650;
+
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.evidence-card__role.supporting {
+  border-color: rgba(74, 222, 128, 0.25);
+  color: #86efac;
+  background: rgba(74, 222, 128, 0.07);
+}
+
+.evidence-card__role.conflicting {
+  border-color: rgba(248, 113, 113, 0.25);
+  color: #fca5a5;
+  background: rgba(248, 113, 113, 0.07);
+}
+
+/* ---------------------------------------------------------
+   EXCERPT
+--------------------------------------------------------- */
+
+.evidence-card__excerpt {
+  margin-top: 16px;
+
+  padding: 13px 14px;
+
+  border-left: 2px solid var(--border-strong);
+  border-radius: 0 10px 10px 0;
+
+  background: rgba(0, 0, 0, 0.16);
+}
+
+.evidence-card__excerpt-label {
+  display: block;
+
+  margin-bottom: 7px;
+
+  color: var(--text-muted);
+
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 650;
+
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.evidence-card__excerpt p {
+  margin: 0;
+
+  color: var(--text-secondary);
+
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+/* ---------------------------------------------------------
+   METRICS
+--------------------------------------------------------- */
+
+.evidence-card__metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  gap: 10px;
+
+  margin-top: 14px;
+}
+
+.evidence-metric {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  padding: 10px 12px;
+
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.evidence-metric span {
+  color: var(--text-muted);
+
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+
+.evidence-metric strong {
+  color: var(--text-primary);
+
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+/* ---------------------------------------------------------
+   SEARCH QUERY
+--------------------------------------------------------- */
+
+.evidence-card__query {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+
+  margin-top: 12px;
+
+  color: var(--text-muted);
+
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.evidence-card__query svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ---------------------------------------------------------
+   SOURCE LINK
+--------------------------------------------------------- */
+
+.evidence-card__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  margin-top: 15px;
+
+  color: var(--text-secondary);
+
+  font-size: 12px;
+  font-weight: 600;
+
+  text-decoration: none;
+
+  transition:
+    color 160ms ease,
+    gap 160ms ease;
+}
+
+.evidence-card__link:hover {
+  gap: 8px;
+  color: var(--text-primary);
+}
+
+/* ---------------------------------------------------------
+   RESPONSIVE
+--------------------------------------------------------- */
+
+@media (max-width: 640px) {
+  .evidence-card__top {
+    flex-direction: column;
+  }
+
+  .evidence-card__metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .evidence-card__role {
+    align-self: flex-start;
+  }
+}

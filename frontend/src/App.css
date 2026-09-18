@@ -373,3 +373,11 @@
     grid-template-columns: 1fr;
   }
 }
+
+.route-loading {
+  min-height: calc(100vh - var(--nav-height));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+}

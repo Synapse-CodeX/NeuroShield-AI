@@ -1,7 +1,7 @@
 [project]
 name = "neuroshield"
 version = "0.1.0"
-description = "Add your description here"
+description = "AI-powered web trust layer for privacy, fact verification, and website safety."
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
@@ -26,4 +26,9 @@ dependencies = [
 [dependency-groups]
 dev = [
     "pytest>=9.1.1",
+    "ruff>=0.16.8",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

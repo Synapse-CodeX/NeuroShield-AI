@@ -1,3 +1,8 @@
+/* =========================================================
+   NEUROSHIELD PRIVACY ANALYZER
+   Evidence-first privacy intelligence interface
+   ========================================================= */
+
 .privacy-page {
   display: flex;
   flex-direction: column;
@@ -15,6 +20,7 @@
   justify-content: center;
   gap: 12px;
   background: var(--gradient-primary);
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -26,9 +32,10 @@
 
 .page-header p {
   color: var(--text-secondary);
-  font-size: 1.1rem;
-  max-width: 600px;
+  font-size: 1.05rem;
+  max-width: 680px;
   margin: 16px auto 0;
+  line-height: 1.65;
 }
 
 .input-section {
@@ -50,10 +57,13 @@
   font-size: 0.9rem;
 }
 
-/* Results Grid */
+/* =========================================================
+   RESULTS LAYOUT
+   ========================================================= */
+
 .results-grid {
   display: grid;
-  grid-template-columns: 1fr 380px;
+  grid-template-columns: minmax(0, 1fr) 380px;
   gap: 24px;
   align-items: start;
 }
@@ -64,11 +74,19 @@
   gap: 24px;
 }
 
-/* Summary Banner */
+.results-sidebar {
+  position: sticky;
+  top: 96px;
+}
+
+/* =========================================================
+   SUMMARY BANNER
+   ========================================================= */
+
 .summary-banner {
-  padding: 32px;
+  padding: 28px;
   display: flex;
-  gap: 40px;
+  gap: 34px;
   align-items: center;
 }
 
@@ -76,8 +94,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 13px;
   flex-shrink: 0;
+  min-width: 165px;
 }
 
 .risk-level {
@@ -85,73 +104,460 @@
 }
 
 .risk-label {
-  font-size: 0.85rem;
+  display: block;
+  font-size: 0.68rem;
   color: var(--text-tertiary);
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.1em;
+  font-weight: 750;
 }
 
 .risk-value {
-  margin-top: 4px;
-  font-weight: 800;
-  font-size: 1.2rem;
+  margin: 5px 0 0;
+  font-weight: 850;
+  font-size: 1.12rem;
+  color: var(--text-primary);
 }
 
-.risk-value.high { color: var(--color-dangerous); }
-.risk-value.medium { color: var(--color-caution); }
-.risk-value.low { color: var(--color-safe); }
+.analysis-confidence {
+  display: block;
+  margin-top: 6px;
+  color: var(--text-tertiary);
+  font-size: 0.68rem;
+  font-weight: 650;
+}
+
+.summary-section {
+  flex: 1;
+  min-width: 0;
+}
 
 .summary-section h3 {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 16px;
-  font-size: 1.2rem;
+  margin: 0 0 13px;
+  font-size: 1.05rem;
 }
 
 .summary-section .markdown-content {
-  font-size: 1.05rem;
-  background: rgba(0,0,0,0.2);
-  padding: 20px;
+  font-size: 0.92rem;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 17px 19px;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-subtle);
 }
 
-/* Panels */
-.risks-panel {
-  padding: 24px;
-  border-left: 4px solid var(--color-dangerous);
-}
+/* =========================================================
+   SHARED PANEL HEADERS
+   ========================================================= */
 
-.risks-panel.safe {
-  border-left: 4px solid var(--color-safe);
+.panel-heading-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
 }
 
 .panel-title {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 16px;
-  font-size: 1.1rem;
+  margin: 0;
+  font-size: 1.05rem;
 }
 
-.panel-title.danger { color: var(--color-dangerous); }
-.panel-title.success { color: var(--color-safe); }
+.panel-heading-row > .finding-count,
+.panel-heading-row > span {
+  color: var(--text-tertiary);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
 
-.risk-list {
-  list-style: none;
-  padding: 0;
+.section-eyebrow {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--text-tertiary);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+/* =========================================================
+   FINDINGS
+   ========================================================= */
+
+.findings-panel {
+  padding: 24px;
+}
+
+.findings-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
-.risk-list li {
-  padding: 12px 16px;
-  background: rgba(239, 68, 68, 0.1);
-  border-radius: var(--radius-sm);
-  color: #fca5a5;
+.privacy-finding {
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.018);
+  transition:
+    border-color 180ms ease,
+    background 180ms ease;
 }
+
+.privacy-finding:hover {
+  border-color: var(--border-light);
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.finding-header {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 17px 18px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.finding-header-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.finding-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 9px;
+}
+
+.severity-badge,
+.finding-category,
+.finding-confidence {
+  display: inline-flex;
+  align-items: center;
+  min-height: 23px;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  font-size: 0.63rem;
+  font-weight: 750;
+}
+
+.severity-badge {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.severity-critical,
+.severity-high {
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.severity-badge.severity-critical {
+  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.severity-badge.severity-high {
+  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.07);
+  border: 1px solid rgba(239, 68, 68, 0.15);
+}
+
+.severity-badge.severity-medium {
+  color: #fcd34d;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.15);
+}
+
+.severity-badge.severity-low {
+  color: #93c5fd;
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.15);
+}
+
+.severity-badge.severity-info {
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid var(--border-subtle);
+}
+
+.finding-category {
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-subtle);
+}
+
+.finding-confidence {
+  color: var(--text-tertiary);
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+}
+
+.finding-header h4 {
+  margin: 0 0 5px;
+  color: var(--text-primary);
+  font-size: 0.96rem;
+  font-weight: 750;
+}
+
+.finding-header p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.81rem;
+  line-height: 1.55;
+}
+
+.finding-expand {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 31px;
+  height: 31px;
+  flex-shrink: 0;
+  color: var(--text-tertiary);
+  border: 1px solid transparent;
+  border-radius: 50%;
+}
+
+.finding-header:hover .finding-expand {
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+  border-color: var(--border-subtle);
+}
+
+/* Severity indicator */
+
+.privacy-finding.severity-high,
+.privacy-finding.severity-critical {
+  border-left: 3px solid var(--color-dangerous);
+}
+
+.privacy-finding.severity-medium {
+  border-left: 3px solid var(--color-caution);
+}
+
+.privacy-finding.severity-low {
+  border-left: 3px solid #3b82f6;
+}
+
+.privacy-finding.severity-info {
+  border-left: 3px solid var(--text-tertiary);
+}
+
+/* =========================================================
+   FINDING DETAILS
+   ========================================================= */
+
+.finding-details {
+  overflow: hidden;
+  border-top: 1px solid var(--border-subtle);
+  background: rgba(0, 0, 0, 0.16);
+  padding: 17px 18px 19px;
+}
+
+.finding-recommendation {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  margin-bottom: 17px;
+  border: 1px solid rgba(245, 158, 11, 0.16);
+  border-radius: var(--radius-sm);
+  background: rgba(245, 158, 11, 0.045);
+}
+
+.finding-recommendation > svg {
+  flex-shrink: 0;
+  color: #fbbf24;
+  margin-top: 2px;
+}
+
+.finding-recommendation div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.finding-recommendation strong {
+  color: #fcd34d;
+  font-size: 0.74rem;
+}
+
+.finding-recommendation span {
+  color: var(--text-secondary);
+  font-size: 0.77rem;
+  line-height: 1.5;
+}
+
+.finding-evidence-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 11px;
+}
+
+.finding-evidence-heading h5 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 0.84rem;
+}
+
+.finding-evidence-heading > span {
+  flex-shrink: 0;
+  color: var(--text-tertiary);
+  font-size: 0.66rem;
+  font-weight: 650;
+}
+
+.privacy-evidence-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+/* =========================================================
+   NO EVIDENCE / SAFE STATE
+   ========================================================= */
+
+.no-policy-evidence,
+.safe-state {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 13px 15px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--border-subtle);
+}
+
+.no-policy-evidence {
+  color: #fcd34d;
+}
+
+.no-policy-evidence span {
+  color: var(--text-secondary);
+  font-size: 0.76rem;
+  line-height: 1.5;
+}
+
+.safe-state {
+  border-color: rgba(16, 185, 129, 0.16);
+  background: rgba(16, 185, 129, 0.035);
+}
+
+.safe-state > svg {
+  color: var(--color-safe);
+  flex-shrink: 0;
+}
+
+.safe-state div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.safe-state strong {
+  color: var(--text-primary);
+  font-size: 0.79rem;
+}
+
+.safe-state span {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+/* =========================================================
+   RECOMMENDATIONS
+   ========================================================= */
+
+.recommendations-panel {
+  padding: 24px;
+  background: rgba(245, 158, 11, 0.035);
+  border: 1px solid rgba(245, 158, 11, 0.14);
+}
+
+.recommendations-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.recommendations-heading h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 1.02rem;
+  color: var(--text-primary);
+}
+
+.recommendations-heading h3 svg {
+  color: #fbbf24;
+}
+
+.recommendations-heading > span {
+  color: var(--text-tertiary);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.recommendations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.recommendation-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 11px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.045);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.018);
+}
+
+.recommendation-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 23px;
+  height: 23px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: rgba(245, 158, 11, 0.1);
+  color: #fbbf24;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.recommendation-item p {
+  margin: 2px 0 0;
+  color: var(--text-secondary);
+  font-size: 0.81rem;
+  line-height: 1.55;
+}
+
+/* =========================================================
+   STRUCTURED DATA
+   ========================================================= */
 
 .data-panel {
   padding: 24px;
@@ -159,44 +565,136 @@
 
 .data-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(250px, 1fr)
+  );
+  gap: 20px;
+}
+
+.data-group {
+  min-width: 0;
 }
 
 .data-group h4 {
-  font-size: 0.95rem;
-  color: var(--text-secondary);
-  margin-bottom: 12px;
+  font-size: 0.72rem;
+  color: var(--text-tertiary);
+  margin: 0 0 9px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.08em;
+}
+
+.data-group p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  line-height: 1.55;
 }
 
 .pill-container {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
 }
+
+/* =========================================================
+   ACTION
+   ========================================================= */
 
 .action-row {
   display: flex;
   justify-content: center;
-  margin-top: 16px;
+  margin-top: 2px;
 }
 
-.results-sidebar {
-  position: sticky;
-  top: 96px;
-}
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
 
 @media (max-width: 1024px) {
   .results-grid {
     grid-template-columns: 1fr;
   }
+
+  .results-sidebar {
+    position: static;
+  }
+
   .summary-banner {
     flex-direction: column;
+    align-items: stretch;
+  }
+
+  .score-section {
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  .risk-level {
+    text-align: left;
+  }
+
+  .risk-level .risk-label,
+  .risk-level .analysis-confidence {
+    text-align: left;
+  }
+}
+
+@media (max-width: 640px) {
+  .privacy-page {
+    gap: 24px;
+  }
+
+  .summary-banner {
+    padding: 20px;
+  }
+
+  .score-section {
+    flex-direction: column;
+  }
+
+  .risk-level,
+  .risk-level .risk-label,
+  .risk-level .analysis-confidence {
     text-align: center;
   }
-  .summary-section h3 {
-    justify-content: center;
+
+  .findings-panel,
+  .recommendations-panel,
+  .data-panel {
+    padding: 18px;
+  }
+
+  .panel-heading-row,
+  .recommendations-heading,
+  .finding-evidence-heading {
+    align-items: flex-start;
+  }
+
+  .finding-header {
+    padding: 15px;
+  }
+
+  .finding-details {
+    padding: 15px;
+  }
+
+  .finding-meta {
+    gap: 5px;
+  }
+
+  .data-grid {
+    grid-template-columns: 1fr;
+    gap: 17px;
+  }
+
+  .input-actions {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .input-actions .btn {
+    width: 100%;
   }
 }

@@ -5,12 +5,12 @@ from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 from tavily import TavilyClient
 
-from agents.shared.llm import llm
 from agents.fact_check_agent.agent_state import (
     AgentState,
     EvidenceSource,
     VerificationResult,
 )
+from agents.shared.llm import llm
 
 
 # ============================================================
@@ -19,21 +19,12 @@ from agents.fact_check_agent.agent_state import (
 
 load_dotenv()
 
-
-# ============================================================
-# TAVILY
-# ============================================================
-
 TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
 
 if not TAVILY_API_KEY:
-    raise RuntimeError(
-        "TAVILY_API_KEY is not configured."
-    )
+    raise RuntimeError("TAVILY_API_KEY is not configured.")
 
-search_client = TavilyClient(
-    api_key=TAVILY_API_KEY
-)
+search_client = TavilyClient(api_key=TAVILY_API_KEY)
 
 
 # ============================================================
@@ -74,12 +65,9 @@ TRUSTED_DOMAIN_SCORES = {
 # ============================================================
 
 class ClaimVerification(BaseModel):
-    """Verification result for one claim."""
+    """Verification result returned by Gemini for one claim."""
 
-    claim_id: int = Field(
-        ...,
-        ge=1,
-    )
+    claim_id: int = Field(..., ge=1)
 
     verdict: str = Field(
         ...,
@@ -102,20 +90,18 @@ class ClaimVerification(BaseModel):
     supporting_evidence_ids: list[int] = Field(
         default_factory=list,
         description=(
-            "Indexes of evidence items supporting the claim."
+            "1-based indexes of evidence items supporting the claim."
         ),
     )
 
     conflicting_evidence_ids: list[int] = Field(
         default_factory=list,
         description=(
-            "Indexes of evidence items contradicting the claim."
+            "1-based indexes of evidence items contradicting the claim."
         ),
     )
 
-    uncertainty_reason: str | None = Field(
-        default=None,
-    )
+    uncertainty_reason: str | None = None
 
 
 class BatchVerificationOutput(BaseModel):
@@ -131,7 +117,7 @@ class BatchVerificationOutput(BaseModel):
 # ============================================================
 
 def _hostname(url: str) -> str:
-    """Extract normalized hostname from a URL."""
+    """Extract a normalized hostname from a URL."""
 
     try:
         return urlparse(url).hostname or ""
@@ -153,10 +139,10 @@ def is_bad(url: str) -> bool:
 
 def get_credibility(url: str) -> float:
     """
-    Estimate source credibility from the domain.
+    Estimate source credibility using deterministic domain heuristics.
 
-    This is a deterministic heuristic, not a claim that the source
-    is objectively correct.
+    This is a heuristic signal, not a claim that a source is objectively
+    correct.
     """
 
     hostname = _hostname(url).lower()
@@ -164,17 +150,17 @@ def get_credibility(url: str) -> float:
     if not hostname:
         return 0.0
 
-    # Exact / suffix matching for known high-quality domains.
     for domain, score in TRUSTED_DOMAIN_SCORES.items():
         if (
             hostname == domain
             or hostname.endswith(f".{domain}")
-            or hostname.endswith(f".{domain.split('.')[-1]}")
-            and domain in {"gov", "edu"}
+            or (
+                hostname.endswith(f".{domain.split('.')[-1]}")
+                and domain in {"gov", "edu"}
+            )
         ):
             return score
 
-    # Generic HTTPS web source.
     if url.lower().startswith("https://"):
         return 0.60
 
@@ -189,7 +175,7 @@ def search(query: str) -> list[dict]:
     """
     Retrieve web evidence from Tavily.
 
-    No LLM is used in this function.
+    No LLM call is performed here.
     """
 
     try:
@@ -203,10 +189,10 @@ def search(query: str) -> list[dict]:
 
         results = response.get("results", [])
 
-        cleaned_results = []
+        cleaned_results: list[dict] = []
 
         for result in results:
-            url = result.get("url", "").strip()
+            url = str(result.get("url", "") or "").strip()
 
             if not url:
                 continue
@@ -214,36 +200,39 @@ def search(query: str) -> list[dict]:
             if is_bad(url):
                 continue
 
-            content = (
-                result.get("content", "")
-                or ""
-            ).strip()
+            content = str(result.get("content", "") or "").strip()
 
             if not content:
                 continue
 
+            tavily_score = float(
+                result.get("score", 0.0) or 0.0
+            )
+
+            credibility = get_credibility(url)
+
             cleaned_results.append(
                 {
                     "title": (
-                        result.get("title", "")
-                        or "Untitled source"
-                    ).strip(),
+                        str(result.get("title", "") or "Untitled source")
+                        .strip()
+                    ),
                     "content": content[:MAX_CONTENT_LENGTH],
                     "url": url,
-                    "score": float(
-                        result.get("score", 0.0)
-                        or 0.0
-                    ),
-                    "credibility": get_credibility(url),
+                    "score": tavily_score,
+                    "credibility": credibility,
                 }
             )
 
-        # Rank using both Tavily relevance and source credibility.
-        cleaned_results.sort(
-            key=lambda item: (
+        # Combine retrieval relevance with source credibility.
+        for item in cleaned_results:
+            item["combined_score"] = (
                 0.65 * item["score"]
                 + 0.35 * item["credibility"]
-            ),
+            )
+
+        cleaned_results.sort(
+            key=lambda item: item["combined_score"],
             reverse=True,
         )
 
@@ -258,14 +247,11 @@ def search(query: str) -> list[dict]:
 # EVIDENCE COLLECTION
 # ============================================================
 
-def collect_evidence(
-    state: AgentState,
-) -> dict:
+def collect_evidence(state: AgentState) -> dict:
     """
-    Retrieve evidence for every extracted claim.
+    Retrieve web evidence for every extracted claim.
 
-    This stage performs web retrieval only.
-    No Gemini calls are made here.
+    This stage performs retrieval only and never consumes Gemini quota.
     """
 
     print("\n[Agent 2] Retrieving web evidence...")
@@ -273,11 +259,7 @@ def collect_evidence(
     evidence_map: dict[int, list[EvidenceSource]] = {}
 
     for claim in state.claims:
-
-        query = (
-            claim.normalized_claim
-            or claim.claim
-        )
+        query = claim.normalized_claim or claim.claim
 
         print(
             f"[Claim {claim.id}] Searching: {query}"
@@ -312,16 +294,71 @@ def collect_evidence(
 
 
 # ============================================================
+# VERIFICATION HELPERS
+# ============================================================
+
+def _is_rate_limit_error(exc: Exception) -> bool:
+    """Detect common Gemini/API quota exhaustion errors."""
+
+    message = str(exc).lower()
+
+    return any(
+        marker in message
+        for marker in (
+            "429",
+            "resource_exhausted",
+            "quota exceeded",
+            "rate limit",
+            "too many requests",
+        )
+    )
+
+
+def _build_unavailable_verifications(
+    claims,
+    reason: str,
+) -> dict[int, VerificationResult]:
+    """
+    Create explicit verification-unavailable results.
+
+    These are NOT factual verdicts. They communicate that the verification
+    service could not complete the reasoning step.
+    """
+
+    return {
+        claim.id: VerificationResult(
+            verdict="Unverifiable",
+            confidence=0.0,
+            reason=(
+                "The available web evidence was retrieved, but "
+                "AI verification could not be completed."
+            ),
+            supporting_sources=[],
+            conflicting_sources=[],
+            uncertainty_reason=reason,
+        )
+        for claim in claims
+    }
+
+
+def _deduplicate_urls(urls: list[str]) -> list[str]:
+    """Preserve source order while removing duplicate URLs."""
+
+    return list(dict.fromkeys(url for url in urls if url))
+
+
+# ============================================================
 # BATCH VERIFICATION
 # ============================================================
 
-def verify_evidence(
-    state: AgentState,
-) -> dict:
+def verify_evidence(state: AgentState) -> dict:
     """
     Verify all claims using the retrieved evidence.
 
-    Uses exactly ONE structured Gemini call for the entire batch.
+    Exactly one structured Gemini request is made for the complete batch.
+
+    If Gemini is unavailable, every claim receives an explicit
+    Unverifiable result rather than a fabricated factual verdict.
     """
 
     print(
@@ -336,7 +373,6 @@ def verify_evidence(
     evidence_context_parts: list[str] = []
 
     for claim in state.claims:
-
         evidence_context_parts.append(
             f"\n===== CLAIM {claim.id} =====\n"
             f"Claim: {claim.claim}\n"
@@ -403,17 +439,19 @@ IMPORTANT:
 1. Evaluate each claim independently.
 2. Do not transfer evidence between unrelated claims.
 3. Do not treat the number of sources as proof of truth.
-4. Prefer specific evidence directly addressing the claim.
-5. Distinguish factual contradiction from mere absence of evidence.
+4. Prefer evidence that directly addresses the claim.
+5. Distinguish contradiction from absence of evidence.
 6. If evidence conflicts, use Partially True or Unverifiable when
    appropriate.
-7. Confidence must reflect the strength and directness of the evidence.
-8. Do not invent sources, URLs, quotations, or evidence.
-9. supporting_evidence_ids and conflicting_evidence_ids refer to the
-   numbered evidence items under each claim.
+7. Confidence must reflect evidence strength and directness.
+8. Never invent sources, URLs, quotations, or evidence.
+9. supporting_evidence_ids and conflicting_evidence_ids are 1-based
+   indexes of evidence items listed under the corresponding claim.
 10. Keep reasons concise but specific.
 11. If evidence is insufficient, explain what is missing.
-12. Return one result for every claim.
+12. Return exactly one result for every claim.
+13. A claim can only be marked True or False when the supplied evidence
+   provides sufficient support for that verdict.
 
 SUPPLIED CLAIMS AND EVIDENCE:
 
@@ -429,134 +467,119 @@ SUPPLIED CLAIMS AND EVIDENCE:
             structured_llm.invoke(prompt)
         )
 
-        verification_map: dict[
-            int,
-            VerificationResult,
-        ] = {}
+        verification_map: dict[int, VerificationResult] = {}
+
+        allowed_verdicts = {
+            "True",
+            "False",
+            "Partially True",
+            "Unverifiable",
+        }
 
         for result in response.results:
-
-            # Find the actual evidence attached to this claim.
             claim_evidence = state.evidence.get(
                 result.claim_id,
                 [],
             )
 
-            supporting_sources = []
+            supporting_sources: list[str] = []
 
-            for evidence_id in (
-                result.supporting_evidence_ids
-            ):
+            for evidence_id in result.supporting_evidence_ids:
                 index = evidence_id - 1
 
                 if 0 <= index < len(claim_evidence):
                     url = claim_evidence[index].url
 
                     if url:
-                        supporting_sources.append(
-                            url
-                        )
+                        supporting_sources.append(url)
 
-            conflicting_sources = []
+            conflicting_sources: list[str] = []
 
-            for evidence_id in (
-                result.conflicting_evidence_ids
-            ):
+            for evidence_id in result.conflicting_evidence_ids:
                 index = evidence_id - 1
 
                 if 0 <= index < len(claim_evidence):
                     url = claim_evidence[index].url
 
                     if url:
-                        conflicting_sources.append(
-                            url
-                        )
-
-            allowed_verdicts = {
-                "True",
-                "False",
-                "Partially True",
-                "Unverifiable",
-            }
+                        conflicting_sources.append(url)
 
             verdict = result.verdict.strip()
 
             if verdict not in allowed_verdicts:
                 verdict = "Unverifiable"
 
-            verification_map[result.claim_id] = (
-                VerificationResult(
-                    verdict=verdict,
-                    confidence=result.confidence,
-                    reason=result.reason.strip(),
-                    supporting_sources=[
-                        *dict.fromkeys(
-                            supporting_sources
-                        )
-                    ],
-                    conflicting_sources=[
-                        *dict.fromkeys(
-                            conflicting_sources
-                        )
-                    ],
-                    uncertainty_reason=(
-                        result.uncertainty_reason
-                    ),
-                )
+            verification_map[result.claim_id] = VerificationResult(
+                verdict=verdict,
+                confidence=result.confidence,
+                reason=result.reason.strip(),
+                supporting_sources=_deduplicate_urls(
+                    supporting_sources
+                ),
+                conflicting_sources=_deduplicate_urls(
+                    conflicting_sources
+                ),
+                uncertainty_reason=(
+                    result.uncertainty_reason.strip()
+                    if result.uncertainty_reason
+                    else None
+                ),
             )
 
-        # Guarantee a result for every claim.
+        # Never allow incomplete structured output to silently remove claims.
         for claim in state.claims:
+            if claim.id in verification_map:
+                continue
 
-            if claim.id not in verification_map:
-
-                verification_map[claim.id] = (
-                    VerificationResult(
-                        verdict="Unverifiable",
-                        confidence=0.0,
-                        reason=(
-                            "The verification model did not "
-                            "return a result for this claim."
-                        ),
-                        supporting_sources=[],
-                        conflicting_sources=[],
-                        uncertainty_reason=(
-                            "Incomplete verification output."
-                        ),
-                    )
-                )
+            verification_map[claim.id] = VerificationResult(
+                verdict="Unverifiable",
+                confidence=0.0,
+                reason=(
+                    "The verification model did not return a complete "
+                    "result for this claim."
+                ),
+                supporting_sources=[],
+                conflicting_sources=[],
+                uncertainty_reason=(
+                    "Incomplete verification response."
+                ),
+            )
 
         print(
-            f"Verified {len(verification_map)} claims"
+            f"[Agent 3] Verified {len(verification_map)} claims."
         )
 
         return {
-            "verifications": verification_map
+            "verifications": verification_map,
         }
 
     except Exception as exc:
+        if _is_rate_limit_error(exc):
+            reason = (
+                "Gemini verification is temporarily unavailable because "
+                "the configured API quota or rate limit has been reached. "
+                "Retrieved web evidence remains available, but no factual "
+                "verdict is asserted."
+            )
 
-        print(
-            f"[Verification Error] {exc}"
-        )
+            print(
+                "[Verification Warning] Gemini quota/rate limit reached. "
+                "Returning explicit Unverifiable results."
+            )
+        else:
+            reason = (
+                "The verification service encountered an unexpected "
+                "error. Retrieved web evidence remains available, but "
+                "no factual verdict is asserted."
+            )
 
-        verification_map = {}
-
-        for claim in state.claims:
-            verification_map[claim.id] = (
-                VerificationResult(
-                    verdict="Unverifiable",
-                    confidence=0.0,
-                    reason=(
-                        "Verification could not be completed."
-                    ),
-                    supporting_sources=[],
-                    conflicting_sources=[],
-                    uncertainty_reason=str(exc),
-                )
+            print(
+                f"[Verification Error] {exc}"
             )
 
         return {
-            "verifications": verification_map
+            "verifications": _build_unavailable_verifications(
+                state.claims,
+                reason,
+            )
         }
-

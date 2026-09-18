@@ -15,6 +15,9 @@
   --bg-card: rgba(17, 17, 24, 0.7);
   --bg-glass: rgba(26, 26, 46, 0.4);
   --bg-glass-hover: rgba(26, 26, 46, 0.6);
+  --text-muted: #71717a;
+  --font-mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+  --border-strong: rgba(255, 255, 255, 0.14);
 
   /* Accent gradients */
   --gradient-primary: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);

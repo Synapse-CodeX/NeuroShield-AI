@@ -1,25 +1,80 @@
-import { motion } from 'framer-motion';
-import { Loader2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import './LoadingState.css';
 
-const LoadingState = ({ message = "Analyzing..." }) => {
+const DEFAULT_STEPS = [
+  'Initializing analysis',
+  'Inspecting input',
+  'Analyzing signals',
+  'Correlating evidence',
+  'Generating assessment',
+];
+
+function LoadingState({ message = 'Analyzing...', steps = DEFAULT_STEPS }) {
+  const [activeStep, setActiveStep] = useState(0);
+
+  useEffect(() => {
+    if (steps.length <= 1) return undefined;
+
+    const interval = window.setInterval(() => {
+      setActiveStep((current) => {
+        if (current >= steps.length - 1) {
+          return current;
+        }
+
+        return current + 1;
+      });
+    }, 1800);
+
+    return () => window.clearInterval(interval);
+  }, [steps]);
+
   return (
-    <div className="loading-state">
-      <motion.div
-        animate={{ rotate: 360 }}
-        transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
-        className="loading-icon-wrapper"
-      >
-        <Loader2 className="loading-icon" size={48} />
-      </motion.div>
-      <h3 className="loading-message gradient-text">{message}</h3>
-      <div className="loading-dots">
-        <motion.span animate={{ opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 1.5, delay: 0 }}>.</motion.span>
-        <motion.span animate={{ opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 1.5, delay: 0.3 }}>.</motion.span>
-        <motion.span animate={{ opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 1.5, delay: 0.6 }}>.</motion.span>
+    <div className="loading-state" role="status" aria-live="polite">
+      <div className="loading-orb">
+        <div className="loading-orb-ring" />
+        <div className="loading-orb-core" />
+      </div>
+
+      <div className="loading-copy">
+        <p className="loading-eyebrow">NEUROSHIELD INTELLIGENCE</p>
+        <h3>{message}</h3>
+        <p className="loading-subtitle">
+          Building an evidence-grounded assessment...
+        </p>
+      </div>
+
+      <div className="loading-pipeline">
+        {steps.map((step, index) => {
+          const isComplete = index < activeStep;
+          const isActive = index === activeStep;
+
+          return (
+            <div
+              className={`loading-step ${
+                isComplete ? 'complete' : ''
+              } ${isActive ? 'active' : ''}`}
+              key={step}
+            >
+              <div className="loading-step-indicator">
+                {isComplete ? '✓' : index + 1}
+              </div>
+
+              <span>{step}</span>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="loading-progress">
+        <div
+          className="loading-progress-fill"
+          style={{
+            width: `${((activeStep + 1) / steps.length) * 100}%`,
+          }}
+        />
       </div>
     </div>
   );
-};
+}
 
 export default LoadingState;
